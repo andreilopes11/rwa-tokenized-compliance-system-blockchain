@@ -36,8 +36,8 @@ contract PermissionedTokenTest {
 
         token.mint(alice, 100 ether);
 
-        vm.prank(alice);
-        token.transfer(bob, 25 ether);
+        bool transferred = _transferAs(alice, bob, 25 ether);
+        assert(transferred);
 
         assert(token.balanceOf(alice) == 75 ether);
         assert(token.balanceOf(bob) == 25 ether);
@@ -59,14 +59,15 @@ contract PermissionedTokenTest {
         _approve(alice, aliceHash);
         token.mint(alice, 10 ether);
 
-        vm.prank(alice);
-        vm.expectRevert(
+        _expectTransferRevert(
+            alice,
+            mallory,
+            1 ether,
             abi.encodeWithSelector(
                 PermissionedToken.WalletNotVerified.selector,
                 mallory
             )
         );
-        token.transfer(mallory, 1 ether);
     }
 
     function testRevokedInvestorCannotSendTokens() public {
@@ -75,14 +76,15 @@ contract PermissionedTokenTest {
         token.mint(alice, 10 ether);
         registry.revokeIdentity(alice);
 
-        vm.prank(alice);
-        vm.expectRevert(
+        _expectTransferRevert(
+            alice,
+            bob,
+            1 ether,
             abi.encodeWithSelector(
                 PermissionedToken.WalletNotVerified.selector,
                 alice
             )
         );
-        token.transfer(bob, 1 ether);
     }
 
     function testEmergencyPauseBlocksTransfers() public {
@@ -91,9 +93,7 @@ contract PermissionedTokenTest {
         token.mint(alice, 10 ether);
         token.pause();
 
-        vm.prank(alice);
-        vm.expectRevert();
-        token.transfer(bob, 1 ether);
+        _expectAnyTransferRevert(alice, bob, 1 ether);
     }
 
     function testTransferFromCannotBypassCompliance() public {
@@ -101,15 +101,18 @@ contract PermissionedTokenTest {
         token.mint(alice, 10 ether);
 
         vm.prank(alice);
-        token.approve(owner, 5 ether);
+        bool approved = token.approve(owner, 5 ether);
+        assert(approved);
 
-        vm.expectRevert(
+        _expectTransferFromRevert(
+            alice,
+            mallory,
+            1 ether,
             abi.encodeWithSelector(
                 PermissionedToken.WalletNotVerified.selector,
                 mallory
             )
         );
-        token.transferFrom(alice, mallory, 1 ether);
     }
 
     function testBurnRequiresVerifiedHolder() public {
@@ -129,5 +132,59 @@ contract PermissionedTokenTest {
 
     function _approve(address wallet, bytes32 identityHash) private {
         registry.addIdentity(wallet, identityHash);
+    }
+
+    function _transferAs(
+        address from,
+        address to,
+        uint256 amount
+    ) private returns (bool) {
+        vm.prank(from);
+        return token.transfer(to, amount);
+    }
+
+    function _expectTransferRevert(
+        address from,
+        address to,
+        uint256 amount,
+        bytes memory expectedRevertData
+    ) private {
+        vm.prank(from);
+        try token.transfer(to, amount) returns (bool transferred) {
+            assert(!transferred);
+            assert(false);
+        } catch (bytes memory revertData) {
+            assert(
+                keccak256(revertData) == keccak256(expectedRevertData)
+            );
+        }
+    }
+
+    function _expectAnyTransferRevert(
+        address from,
+        address to,
+        uint256 amount
+    ) private {
+        vm.prank(from);
+        try token.transfer(to, amount) returns (bool transferred) {
+            assert(!transferred);
+            assert(false);
+        } catch {}
+    }
+
+    function _expectTransferFromRevert(
+        address from,
+        address to,
+        uint256 amount,
+        bytes memory expectedRevertData
+    ) private {
+        try token.transferFrom(from, to, amount) returns (bool transferred) {
+            assert(!transferred);
+            assert(false);
+        } catch (bytes memory revertData) {
+            assert(
+                keccak256(revertData) == keccak256(expectedRevertData)
+            );
+        }
     }
 }
