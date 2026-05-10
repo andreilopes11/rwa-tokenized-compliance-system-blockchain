@@ -1,0 +1,16 @@
+{
+  "name": "@rwa-tokenized-compliance-system/evm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Foundry contracts for the RWA tokenized compliance MVP.",
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test -vvv",
+    "test:unit": "forge test --match-path \"test/unit/*.t.sol\" -vvv",
+    "deploy:local": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast",
+    "deploy:sepolia": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.6.1"
+  }
+}

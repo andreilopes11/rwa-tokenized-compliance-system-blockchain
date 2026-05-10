@@ -1,15 +1,21 @@
-# Remix compiler artifacts
+# Foundry build output
+cache/
+out/
+broadcast/
+deployments/
+
+# Node dependencies
+node_modules/
+
+# Remix artifacts
 **/artifacts/
 **/artifacts/**
-
-# Remix plugin state folders
 deps/
 states/
 
-# Debug info
+# Misc
 *.dbg.json
 *.tsbuildinfo
-
-# Optional
 .env
 .env.local
+.DS_Store
