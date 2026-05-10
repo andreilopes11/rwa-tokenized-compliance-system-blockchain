@@ -81,22 +81,62 @@ Testes unitários:
 npm run test:unit
 ```
 
-## Deploy local
+## Bootstrap local
 
-Terminal 1:
+Para checar tooling, subir `anvil`, buildar, testar, deployar e gerar as variáveis para o backend:
+
+```bash
+npm run local:up
+```
+
+O fluxo faz:
+
+- valida `node`, `npm`, `forge`, `cast` e `anvil`
+- instala `node_modules` quando faltar `@openzeppelin/contracts`
+- executa `forge build`
+- executa `forge test -vvv`
+- sobe um `anvil` local em `127.0.0.1:8545` se ainda nao existir
+- deploya `IdentityRegistry` e `PermissionedToken`
+- gera arquivos para o backend consumir
+
+Arquivos gerados:
+
+- `deployments/31337.json`
+- `deployments/31337.backend.env`
+
+O arquivo `deployments/31337.backend.env` sai com:
+
+- `RPC_URL`
+- `CHAIN_ID`
+- `IDENTITY_REGISTRY_ADDRESS`
+- `TOKEN_ADDRESS`
+- `ADMIN_PRIVATE_KEY`
+
+Se quiser apenas validar o ambiente:
+
+```bash
+npm run check:tooling
+```
+
+Se quiser derrubar o `anvil` iniciado pelo script:
+
+```bash
+npm run local:down
+```
+
+## Deploy local manual
+
+Fallback manual, se voce quiser rodar cada etapa separadamente:
 
 ```bash
 anvil --host 127.0.0.1 --port 8545 --chain-id 31337
 ```
 
-Terminal 2:
+Em outro terminal:
 
 ```bash
-cp .env.example .env
 npm run deploy:local
 ```
-
-O script grava os endereços em `deployments/<chainId>.json`.
 
 ## Deploy Sepolia
 

@@ -7,7 +7,10 @@
     "build": "forge build",
     "test": "forge test -vvv",
     "test:unit": "forge test --match-path \"test/unit/*.t.sol\" -vvv",
-    "deploy:local": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast",
+    "check:tooling": "bash scripts/check-tooling.sh",
+    "local:up": "bash scripts/run-local.sh",
+    "local:down": "bash scripts/stop-local.sh",
+    "deploy:local": "bash scripts/deploy-local.sh",
     "deploy:sepolia": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify"
   },
   "dependencies": {

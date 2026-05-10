@@ -19,3 +19,4 @@ states/
 .env
 .env.local
 .DS_Store
+.local/
