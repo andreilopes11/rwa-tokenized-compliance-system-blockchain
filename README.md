@@ -1,17 +1,17 @@
 # RWA Tokenized Compliance System Blockchain
 
-Repositório focado no backend EVM do projeto: contratos Solidity, script de deploy e testes de compliance para um token permissionado de ativos tokenizados.
+This repository is focused on the EVM backend layer of the project: Solidity contracts, deployment scripts, and compliance tests for a permissioned tokenized asset flow.
 
-Os documentos em `/_docs/**` foram preservados como referência histórica do projeto maior, mas esta base agora está organizada apenas para a camada blockchain.
+The documents in `/_docs/**` were preserved as historical reference for the broader project, but this repository is now organized strictly around the blockchain layer.
 
-## Escopo
+## Scope
 
-- `IdentityRegistry`: registra e revoga identidades aprovadas pelo operador.
-- `PermissionedToken`: ERC-20 permissionado com checagem de identidade em mint, transfer e burn.
-- Deploy local e em Sepolia via Foundry.
-- Testes unitários concentrados no comportamento on-chain.
+- `IdentityRegistry`: approves and revokes investor identities.
+- `PermissionedToken`: permissioned ERC-20 with identity checks on mint, transfer, and burn.
+- Local and Sepolia deployment through Foundry.
+- Unit tests focused on on-chain behavior.
 
-## Estrutura
+## Structure
 
 ```text
 src/
@@ -27,41 +27,41 @@ utils/
   foundry/Vm.sol
 ```
 
-## Pré-requisitos
+## Prerequisites
 
 - Foundry (`forge`, `cast`, `anvil`)
 - Node.js + npm
 
-Instalação do Foundry:
+Install Foundry:
 
 ```bash
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
 ```
 
-Instalação da dependência Solidity:
+Install the Solidity dependency:
 
 ```bash
 npm install
 ```
 
-## Variáveis de ambiente
+## Environment Variables
 
-Use `.env.example` como base:
+Use `.env.example` as the base:
 
 ```bash
 cp .env.example .env
 ```
 
-Variáveis principais:
+Main variables:
 
-- `RPC_URL`: RPC local ou remoto
-- `CHAIN_ID`: chain id alvo
-- `PRIVATE_KEY`: chave do deployer
-- `SEPOLIA_RPC_URL`: RPC da Sepolia
-- `ETHERSCAN_API_KEY`: opcional para verificação
+- `RPC_URL`: local or remote RPC endpoint
+- `CHAIN_ID`: target chain id
+- `PRIVATE_KEY`: deployer private key
+- `SEPOLIA_RPC_URL`: Sepolia RPC endpoint
+- `ETHERSCAN_API_KEY`: optional verification key
 
-## Desenvolvimento local
+## Local Development
 
 Build:
 
@@ -69,42 +69,50 @@ Build:
 npm run build
 ```
 
-Testes:
+Tests:
 
 ```bash
 npm test
 ```
 
-Testes unitários:
+Unit tests:
 
 ```bash
 npm run test:unit
 ```
 
-## Bootstrap local
+## Local Bootstrap
 
-Para checar tooling, subir `anvil`, buildar, testar, deployar e gerar as variáveis para o backend:
+Recommended single script to clear previous artifacts, check tooling, start `anvil`, build, test, deploy, and generate backend-ready environment files:
+
+```bash
+npm run local:fresh
+```
+
+If you want to start the environment without deleting the previous artifacts:
 
 ```bash
 npm run local:up
 ```
 
-O fluxo faz:
+This flow:
 
-- valida `node`, `npm`, `forge`, `cast` e `anvil`
-- instala `node_modules` quando faltar `@openzeppelin/contracts`
-- executa `forge build`
-- executa `forge test -vvv`
-- sobe um `anvil` local em `127.0.0.1:8545` se ainda nao existir
-- deploya `IdentityRegistry` e `PermissionedToken`
-- gera arquivos para o backend consumir
+- validates `node`, `npm`, `forge`, `cast`, and `anvil`
+- stops a previous `anvil` process started by the scripts
+- clears `cache/`, `out/`, `broadcast/`, `deployments/`, and temporary files under `.local/`
+- installs `node_modules` when `@openzeppelin/contracts` is missing
+- runs `forge build`
+- runs `forge test -vvv`
+- starts a local `anvil` node at `127.0.0.1:8545` when one is not already running
+- deploys `IdentityRegistry` and `PermissionedToken`
+- generates files for backend consumption
 
-Arquivos gerados:
+Generated files:
 
 - `deployments/31337.json`
 - `deployments/31337.backend.env`
 
-O arquivo `deployments/31337.backend.env` sai com:
+The `deployments/31337.backend.env` file includes:
 
 - `RPC_URL`
 - `CHAIN_ID`
@@ -112,44 +120,44 @@ O arquivo `deployments/31337.backend.env` sai com:
 - `TOKEN_ADDRESS`
 - `ADMIN_PRIVATE_KEY`
 
-Se quiser apenas validar o ambiente:
+If you only want to validate the environment:
 
 ```bash
 npm run check:tooling
 ```
 
-Se quiser derrubar o `anvil` iniciado pelo script:
+If you want to stop the `anvil` instance started by the scripts:
 
 ```bash
 npm run local:down
 ```
 
-## Deploy local manual
+## Manual Local Deployment
 
-Fallback manual, se voce quiser rodar cada etapa separadamente:
+Manual fallback if you want to run each step separately:
 
 ```bash
 anvil --host 127.0.0.1 --port 8545 --chain-id 31337
 ```
 
-Em outro terminal:
+In another terminal:
 
 ```bash
 npm run deploy:local
 ```
 
-## Deploy Sepolia
+## Sepolia Deployment
 
-Preencha `SEPOLIA_RPC_URL`, `PRIVATE_KEY` e, se quiser verificação, `ETHERSCAN_API_KEY`.
+Set `SEPOLIA_RPC_URL`, `PRIVATE_KEY`, and optionally `ETHERSCAN_API_KEY` if you want verification.
 
 ```bash
 npm run deploy:sepolia
 ```
 
-## Decisões da limpeza
+## Cleanup Notes
 
-- O `README` anterior descrevia backend Java, frontend Next.js e scripts inexistentes neste repositório.
-- A estrutura dos contratos foi separada por domínio (`identity`, `token`, `interfaces`).
-- O contrato do token deixou de emitir um evento de debug que não era necessário para a regra de negócio.
-- Os testes foram divididos por unidade de responsabilidade.
-- A configuração agora ignora artefatos reais do Foundry e diretórios gerados em deploy.
+- The previous `README` described a Java backend, a Next.js frontend, and scripts that do not exist in this repository.
+- The contract structure was separated by domain (`identity`, `token`, `interfaces`).
+- The token contract no longer emits the old debug event because it was not part of the business rule.
+- The tests were split by unit responsibility.
+- The configuration now ignores real Foundry artifacts and generated deployment directories.

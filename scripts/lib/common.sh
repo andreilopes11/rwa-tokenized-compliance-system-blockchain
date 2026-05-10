@@ -28,7 +28,7 @@ ensure_foundry_path() {
 
 require_cmd() {
     local cmd="$1"
-    command -v "$cmd" >/dev/null 2>&1 || fail "comando ausente: $cmd"
+    command -v "$cmd" >/dev/null 2>&1 || fail "missing command: $cmd"
 }
 
 load_dotenv() {
@@ -47,6 +47,37 @@ load_dotenv() {
 
 ensure_local_state_dir() {
     mkdir -p "$LOCAL_STATE_DIR"
+}
+
+stop_managed_anvil() {
+    ensure_local_state_dir
+
+    if [ ! -f "$ANVIL_PID_FILE" ]; then
+        return 0
+    fi
+
+    anvil_pid="$(cat "$ANVIL_PID_FILE")"
+    if kill -0 "$anvil_pid" >/dev/null 2>&1; then
+        kill "$anvil_pid" >/dev/null 2>&1 || true
+        log "anvil stopped (pid $anvil_pid)"
+    else
+        log "recorded pid is no longer running"
+    fi
+
+    rm -f "$ANVIL_PID_FILE"
+}
+
+clean_generated_files() {
+    log "cleaning local artifacts"
+    rm -rf \
+        "$ROOT_DIR/cache" \
+        "$ROOT_DIR/out" \
+        "$ROOT_DIR/broadcast" \
+        "$ROOT_DIR/deployments"
+
+    rm -f \
+        "$LOCAL_STATE_DIR/anvil.log" \
+        "$LOCAL_STATE_DIR/anvil.pid"
 }
 
 artifact_bytecode() {

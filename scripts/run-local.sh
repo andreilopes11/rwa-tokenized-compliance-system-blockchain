@@ -20,7 +20,7 @@ cleanup_on_error() {
             kill "$anvil_pid" >/dev/null 2>&1 || true
         fi
         rm -f "$ANVIL_PID_FILE"
-        log "anvil encerrado por falha no bootstrap"
+        log "anvil stopped because bootstrap failed"
     fi
 }
 
@@ -31,28 +31,28 @@ cd "$ROOT_DIR"
 "$ROOT_DIR/scripts/check-tooling.sh"
 
 if [ ! -d "$ROOT_DIR/node_modules/@openzeppelin/contracts" ]; then
-    log "dependencias npm ausentes, executando npm install"
+    log "npm dependencies missing, running npm install"
     npm install
 fi
 
-log "executando build"
+log "running build"
 forge build
 
-log "executando testes"
+log "running tests"
 forge test -vvv
 
 if wait_for_rpc "$LOCAL_RPC_URL" 2; then
     remote_chain_id="$(cast chain-id --rpc-url "$LOCAL_RPC_URL")"
     if [ "$remote_chain_id" != "$LOCAL_CHAIN_ID" ]; then
-        fail "ja existe um RPC em $LOCAL_RPC_URL com chain id $remote_chain_id"
+        fail "an RPC is already running at $LOCAL_RPC_URL with chain id $remote_chain_id"
     fi
-    log "reutilizando anvil existente em $LOCAL_RPC_URL"
+    log "reusing existing anvil at $LOCAL_RPC_URL"
 else
     if [ -f "$ANVIL_PID_FILE" ]; then
         rm -f "$ANVIL_PID_FILE"
     fi
 
-    log "subindo anvil em $LOCAL_RPC_URL"
+    log "starting anvil at $LOCAL_RPC_URL"
     if command -v setsid >/dev/null 2>&1; then
         setsid anvil \
             --host "$LOCAL_ANVIL_HOST" \
@@ -70,12 +70,12 @@ else
     echo $! > "$ANVIL_PID_FILE"
     started_anvil=1
 
-    wait_for_rpc "$LOCAL_RPC_URL" 30 || fail "anvil nao respondeu em $LOCAL_RPC_URL"
+    wait_for_rpc "$LOCAL_RPC_URL" 30 || fail "anvil did not respond at $LOCAL_RPC_URL"
 fi
 
 "$ROOT_DIR/scripts/deploy-local.sh"
 
-log "ambiente local pronto"
+log "local environment ready"
 log "RPC: $LOCAL_RPC_URL"
 log "deployments: $ROOT_DIR/deployments/$LOCAL_CHAIN_ID.json"
 log "backend env: $ROOT_DIR/deployments/$LOCAL_CHAIN_ID.backend.env"

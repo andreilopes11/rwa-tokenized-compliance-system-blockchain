@@ -15,28 +15,28 @@ require_cmd cast
 cd "$ROOT_DIR"
 
 if ! wait_for_rpc "$LOCAL_RPC_URL" 5; then
-    fail "RPC local indisponivel em $LOCAL_RPC_URL"
+    fail "local RPC unavailable at $LOCAL_RPC_URL"
 fi
 
 remote_chain_id="$(cast chain-id --rpc-url "$LOCAL_RPC_URL")"
 if [ "$remote_chain_id" != "$LOCAL_CHAIN_ID" ]; then
-    fail "chain id inesperado em $LOCAL_RPC_URL: esperado $LOCAL_CHAIN_ID, recebido $remote_chain_id"
+    fail "unexpected chain id at $LOCAL_RPC_URL: expected $LOCAL_CHAIN_ID, got $remote_chain_id"
 fi
 
-log "buildando contratos"
+log "building contracts"
 forge build >/dev/null
 
 owner_address="$(cast wallet address --private-key "$LOCAL_DEPLOY_PRIVATE_KEY")"
 identity_artifact="$ROOT_DIR/out/IdentityRegistry.sol/IdentityRegistry.json"
 token_artifact="$ROOT_DIR/out/PermissionedToken.sol/PermissionedToken.json"
 
-[ -f "$identity_artifact" ] || fail "artefato ausente: $identity_artifact"
-[ -f "$token_artifact" ] || fail "artefato ausente: $token_artifact"
+[ -f "$identity_artifact" ] || fail "missing artifact: $identity_artifact"
+[ -f "$token_artifact" ] || fail "missing artifact: $token_artifact"
 
 registry_bytecode="$(artifact_bytecode "$identity_artifact")"
 registry_constructor_args="$(cast abi-encode 'constructor(address)' "$owner_address")"
 
-log "deployando IdentityRegistry"
+log "deploying IdentityRegistry"
 registry_receipt="$(cast send --json \
     --private-key "$LOCAL_DEPLOY_PRIVATE_KEY" \
     --rpc-url "$LOCAL_RPC_URL" \
@@ -50,7 +50,7 @@ token_constructor_args="$(cast abi-encode 'constructor(string,string,address,add
     "$registry_address" \
     "$owner_address")"
 
-log "deployando PermissionedToken"
+log "deploying PermissionedToken"
 token_receipt="$(cast send --json \
     --private-key "$LOCAL_DEPLOY_PRIVATE_KEY" \
     --rpc-url "$LOCAL_RPC_URL" \
@@ -60,8 +60,8 @@ token_address="$(json_field "$token_receipt" contractAddress)"
 resolved_owner="$(cast call "$registry_address" 'owner()(address)' --rpc-url "$LOCAL_RPC_URL")"
 resolved_registry="$(cast call "$token_address" 'identityRegistry()(address)' --rpc-url "$LOCAL_RPC_URL")"
 
-[ "$resolved_owner" = "$owner_address" ] || fail "owner do registry diverge do deployer esperado"
-[ "${resolved_registry,,}" = "${registry_address,,}" ] || fail "token aponta para um registry inesperado"
+[ "$resolved_owner" = "$owner_address" ] || fail "registry owner does not match the expected deployer"
+[ "${resolved_registry,,}" = "${registry_address,,}" ] || fail "token points to an unexpected registry"
 
 mkdir -p "$ROOT_DIR/deployments"
 
@@ -79,8 +79,8 @@ TOKEN_ADDRESS=$token_address
 ADMIN_PRIVATE_KEY=$LOCAL_DEPLOY_PRIVATE_KEY
 EOF
 
-log "deploy local concluido"
+log "local deployment complete"
 log "IdentityRegistry: $registry_address"
 log "PermissionedToken: $token_address"
 log "owner: $owner_address"
-log "arquivo backend: deployments/$LOCAL_CHAIN_ID.backend.env"
+log "backend env file: deployments/$LOCAL_CHAIN_ID.backend.env"

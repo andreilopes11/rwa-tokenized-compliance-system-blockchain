@@ -8,6 +8,7 @@
     "test": "forge test -vvv",
     "test:unit": "forge test --match-path \"test/unit/*.t.sol\" -vvv",
     "check:tooling": "bash scripts/check-tooling.sh",
+    "local:fresh": "bash scripts/local-fresh.sh",
     "local:up": "bash scripts/run-local.sh",
     "local:down": "bash scripts/stop-local.sh",
     "deploy:local": "bash scripts/deploy-local.sh",
