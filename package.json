@@ -2,17 +2,19 @@
   "name": "@rwa-tokenized-compliance-system/evm",
   "version": "0.1.0",
   "private": true,
-  "description": "Foundry contracts for the RWA tokenized compliance MVP.",
+  "description": "Foundry contracts for the RWA tokenized compliance MVP and T-REX target.",
   "scripts": {
     "build": "forge build",
     "test": "forge test -vvv",
     "test:unit": "forge test --match-path \"test/unit/*.t.sol\" -vvv",
+    "test:security": "forge test --match-path \"test/security/*.t.sol\" -vvv",
     "check:tooling": "bash scripts/check-tooling.sh",
     "local:fresh": "bash scripts/local-fresh.sh",
     "local:up": "bash scripts/run-local.sh",
     "local:down": "bash scripts/stop-local.sh",
     "deploy:local": "bash scripts/deploy-local.sh",
-    "deploy:sepolia": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify"
+    "deploy:sepolia": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify && node scripts/write-backend-env.mjs",
+    "deploy:sepolia:trex": "forge script script/deploy/DeployTREX.s.sol:DeployTREX --rpc-url ${SEPOLIA_RPC_URL} --broadcast"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1"

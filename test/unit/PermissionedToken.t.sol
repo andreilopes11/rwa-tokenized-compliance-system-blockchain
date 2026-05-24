@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IdentityRegistry} from "../../src/identity/IdentityRegistry.sol";
-import {PermissionedToken} from "../../src/token/PermissionedToken.sol";
+import {IdentityRegistry} from "../../src/legacy/identity/IdentityRegistry.sol";
+import {PermissionedToken} from "../../src/legacy/token/PermissionedToken.sol";
 import {Vm} from "../../utils/foundry/Vm.sol";
 
 contract PermissionedTokenTest {

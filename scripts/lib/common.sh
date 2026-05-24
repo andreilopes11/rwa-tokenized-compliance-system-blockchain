@@ -80,6 +80,23 @@ clean_generated_files() {
         "$LOCAL_STATE_DIR/anvil.pid"
 }
 
+resolve_contract_artifact() {
+    local contract_name="$1"
+    local candidates=(
+        "$ROOT_DIR/out/${contract_name}.sol/${contract_name}.json"
+        "$ROOT_DIR/out/legacy/identity/${contract_name}.sol/${contract_name}.json"
+        "$ROOT_DIR/out/legacy/token/${contract_name}.sol/${contract_name}.json"
+    )
+    local candidate
+    for candidate in "${candidates[@]}"; do
+        if [ -f "$candidate" ]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    fail "missing artifact for ${contract_name} (run forge build). Tried: ${candidates[*]}"
+}
+
 artifact_bytecode() {
     local artifact_path="$1"
     node -e 'const fs=require("fs"); const artifact=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write(artifact.bytecode.object);' "$artifact_path"

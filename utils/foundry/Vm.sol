@@ -27,6 +27,12 @@ interface Vm {
         address value
     ) external returns (string memory);
 
+    function serializeString(
+        string calldata objectKey,
+        string calldata valueKey,
+        string calldata value
+    ) external returns (string memory);
+
     function startBroadcast(uint256 privateKey) external;
 
     function stopBroadcast() external;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IdentityRegistry} from "../../src/identity/IdentityRegistry.sol";
+import {IdentityRegistry} from "../../src/legacy/identity/IdentityRegistry.sol";
 import {Vm} from "../../utils/foundry/Vm.sol";
 
 contract IdentityRegistryTest {

@@ -16,6 +16,9 @@ remappings = [
   "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"
 ]
 
+[lint]
+exclude_lints = ["erc20-unchecked-transfer"]
+
 [fmt]
 line_length = 100
 tab_width = 4

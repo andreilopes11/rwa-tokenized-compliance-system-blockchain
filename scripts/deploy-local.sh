@@ -27,11 +27,8 @@ log "building contracts"
 forge build >/dev/null
 
 owner_address="$(cast wallet address --private-key "$LOCAL_DEPLOY_PRIVATE_KEY")"
-identity_artifact="$ROOT_DIR/out/IdentityRegistry.sol/IdentityRegistry.json"
-token_artifact="$ROOT_DIR/out/PermissionedToken.sol/PermissionedToken.json"
-
-[ -f "$identity_artifact" ] || fail "missing artifact: $identity_artifact"
-[ -f "$token_artifact" ] || fail "missing artifact: $token_artifact"
+identity_artifact="$(resolve_contract_artifact IdentityRegistry)"
+token_artifact="$(resolve_contract_artifact PermissionedToken)"
 
 registry_bytecode="$(artifact_bytecode "$identity_artifact")"
 registry_constructor_args="$(cast abi-encode 'constructor(address)' "$owner_address")"
@@ -65,19 +62,16 @@ resolved_registry="$(cast call "$token_address" 'identityRegistry()(address)' --
 
 mkdir -p "$ROOT_DIR/deployments"
 
-node -e 'const fs=require("fs"); const [path, registry, token, owner] = process.argv.slice(1); fs.writeFileSync(path, JSON.stringify({ identityRegistry: registry, permissionedToken: token, owner }, null, 2) + "\n");' \
+node -e 'const fs=require("fs"); const [path, registry, token, owner] = process.argv.slice(1); fs.writeFileSync(path, JSON.stringify({ profile: "mvp", blockchainMode: "mvp", identityRegistry: registry, permissionedToken: token, owner }, null, 2) + "\n");' \
     "$ROOT_DIR/deployments/$LOCAL_CHAIN_ID.json" \
     "$registry_address" \
     "$token_address" \
     "$owner_address"
 
-cat > "$ROOT_DIR/deployments/$LOCAL_CHAIN_ID.backend.env" <<EOF
-RPC_URL=$LOCAL_RPC_URL
-CHAIN_ID=$LOCAL_CHAIN_ID
-IDENTITY_REGISTRY_ADDRESS=$registry_address
-TOKEN_ADDRESS=$token_address
-ADMIN_PRIVATE_KEY=$LOCAL_DEPLOY_PRIVATE_KEY
-EOF
+export CHAIN_ID="$LOCAL_CHAIN_ID"
+export RPC_URL="$LOCAL_RPC_URL"
+export PRIVATE_KEY="$LOCAL_DEPLOY_PRIVATE_KEY"
+node "$ROOT_DIR/scripts/write-backend-env.mjs"
 
 log "local deployment complete"
 log "IdentityRegistry: $registry_address"
