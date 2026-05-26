@@ -6,8 +6,8 @@ import {PermissionedToken} from "../../src/legacy/token/PermissionedToken.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Vm} from "../../utils/foundry/Vm.sol";
 
-/// @notice Portfolio Baseline (MVP) deploy. Use when BLOCKCHAIN_PROFILE=mvp.
-/// @dev For T-REX (Testnet Public target), use DeployTREX.s.sol after lib/T-REX is installed.
+/// @notice Legacy registry deploy for permissioned RWA tokens. Use when BLOCKCHAIN_PROFILE=mvp.
+/// @dev For ERC-3643 / T-REX compliance modules, use DeployTREX.s.sol after lib/T-REX is installed.
 contract DeployCore {
     Vm private constant vm =
         Vm(address(uint160(uint256(keccak256("hevm cheat code")))));

@@ -2,7 +2,7 @@
   "name": "@rwa-tokenized-compliance-system/evm",
   "version": "0.1.0",
   "private": true,
-  "description": "Foundry contracts for the RWA tokenized compliance MVP and T-REX target.",
+  "description": "Foundry contracts for regulated RWA security tokens — legacy registry and ERC-3643 / T-REX.",
   "scripts": {
     "build": "forge build",
     "test": "forge test -vvv",
