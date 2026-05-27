@@ -9,10 +9,12 @@ contract TrexModularCompliance is AccessControl {
 
     ITrexIdentityRegistry public immutable identityRegistry;
     bool public paused;
+    uint256 public maxTransferAmount;
 
     error InvalidWallet();
 
     event CompliancePaused(bool paused, address indexed operator);
+    event LimitsUpdated(uint256 maxTransferAmount, address indexed operator);
 
     constructor(
         address superAdmin,
@@ -37,8 +39,19 @@ contract TrexModularCompliance is AccessControl {
         emit CompliancePaused(isPaused, msg.sender);
     }
 
-    function canTransfer(address from, address to, uint256) external view returns (bool) {
+    /// @notice Governance-only transfer policy limit (`0` = no cap).
+    function setLimits(uint256 maxAmount) external onlyRole(GOVERNANCE_ROLE) {
+        maxTransferAmount = maxAmount;
+        emit LimitsUpdated(maxAmount, msg.sender);
+    }
+
+    function canTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) external view returns (bool) {
         if (paused) return false;
+        if (maxTransferAmount > 0 && amount > maxTransferAmount) return false;
         if (from != address(0) && !identityRegistry.isVerified(from)) return false;
         if (to != address(0) && !identityRegistry.isVerified(to)) return false;
         return true;

@@ -105,6 +105,32 @@ contract TrexComplianceSecurityTest {
         registry.registerIdentity(alice, keccak256("alice-doc"));
     }
 
+    function testSecurity_MintToNonCompliantTargetReverts() public {
+        vm.prank(lifecycleAgent);
+        vm.expectRevert(
+            abi.encodeWithSelector(TrexToken.NonCompliantRecipient.selector, mallory)
+        );
+        token.mint(mallory, 1 ether);
+    }
+
+    function testSecurity_GovernanceSetLimitsBlocksOversizedTransfer() public {
+        vm.prank(governanceAgent);
+        modularCompliance.setLimits(1 ether);
+
+        vm.prank(alice);
+        vm.expectRevert(TrexToken.TransferNotCompliant.selector);
+        token.transfer(bob, 2 ether);
+    }
+
+    function testSecurity_ModularCompliancePauseBlocksTransfers() public {
+        vm.prank(governanceAgent);
+        modularCompliance.setPaused(true);
+
+        vm.prank(alice);
+        vm.expectRevert(TrexToken.TransferNotCompliant.selector);
+        token.transfer(bob, 1 ether);
+    }
+
     function testSecurityFuzz_NoStateMutationWhenComplianceCheckFails(
         uint96 amount
     ) public {

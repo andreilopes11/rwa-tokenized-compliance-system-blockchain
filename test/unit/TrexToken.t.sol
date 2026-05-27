@@ -39,6 +39,16 @@ contract TrexTokenTest {
         );
     }
 
+    function testMintToNonCompliantWalletReverts() public {
+        _register(alice, "alice-doc");
+
+        vm.prank(lifecycleAgent);
+        vm.expectRevert(
+            abi.encodeWithSelector(TrexToken.NonCompliantRecipient.selector, mallory)
+        );
+        token.mint(mallory, 1 ether);
+    }
+
     function testOnlyLifecycleRoleCanMint() public {
         _register(alice, "alice-doc");
 

@@ -1,52 +1,82 @@
-# RWA Tokenized Compliance — Blockchain
+# VaultGuard RWA — Blockchain (Production T-REX)
 
-Foundry contracts for permissioned RWA security tokens: production TREX-style contracts with explicit role separation, plus legacy migration contracts.
+Foundry contracts for **production** ERC-3643 / T-REX-style permissioned RWA tokens with explicit on-chain separation of duties. Legacy MVP contracts remain under `src/legacy/` for migration testing only.
 
-## Contract with `_docs`
+## Contract specification
 
 | Item | Link |
 |------|------|
-| Spec | [`../_docs/contracts-erc3643.md`](../_docs/contracts-erc3643.md) |
-| Deploy | [`../_docs/deployment.md`](../_docs/deployment.md) §A–B |
-| Profile | `BLOCKCHAIN_PROFILE=mvp` (legacy) · `trex` (ERC-3643) |
+| Normative spec | [`../_docs/contracts-erc3643.md`](../_docs/contracts-erc3643.md) |
+| Deploy & keys | [`../_docs/deployment.md`](../_docs/deployment.md) |
+| Release gate G1 | [`../_docs/testnet-evidence.md`](../_docs/testnet-evidence.md) |
 
-## When to deploy which script
+## Production deploy (default)
 
-| Profile | Script | Use |
-|---------|--------|-----|
-| `mvp` | `script/deploy/DeployCore.s.sol` | Legacy registry (migration and local testing only) |
-| `trex` | `script/deploy/DeployTREX.s.sol` | Production role-separated TREX-style deploy |
+| Script | Profile | Use |
+|--------|---------|-----|
+| `script/deploy/DeployTREX.s.sol` | `trex` | **Production** — Identity Registry, Modular Compliance, Token, role-separated agents |
+| `script/deploy/DeployCore.s.sol` | `mvp` | Legacy only (non-production) |
+
+### Agent roles (on-chain SoD)
+
+| Agent | Contract roles | Allowed operations |
+|-------|----------------|-------------------|
+| **Governance** | `GOVERNANCE_ROLE` on token + modular compliance | `pause` / `unpause`, `setPaused`, `setLimits` |
+| **Compliance** | `COMPLIANCE_ROLE` on identity registry | `registerIdentity`, `deleteIdentity` / `removeIdentity` |
+| **Lifecycle** | `LIFECYCLE_ROLE` on token | `mint` (to verified wallets only) |
+| **Transfer manager** | `TRANSFER_MANAGER_ROLE` on token | `forceTransfer` (policy-bound recovery) |
+
+Deploy-time assertions reject overlapping governance/compliance keys and zero addresses.
+
+### Deployment artifact
+
+After `forge script ... DeployTREX`, addresses are written to:
+
+```text
+deployments/{chainId}.json
+```
+
+Fields: `profile`, `blockchainMode`, `identityRegistry`, `modularCompliance`, `token`, `superAdmin`, `governanceAgent`, `complianceAgent`, `lifecycleAgent`, `transferManagerAgent`.
+
+Run `node scripts/write-backend-env.mjs` (or monorepo `sync-local-env.sh`) to propagate addresses to the backend.
 
 ## Commands
 
 ```bash
 npm install
-npm test
-npm run test:security
-npm run deploy:local
+npm run build          # forge build
+npm test               # unit + security
+npm run test:security  # test/security/*.t.sol only
+npm run deploy:local   # Anvil + DeployTREX
 npm run deploy:sepolia
 ```
+
+Requires [Foundry](https://book.getfoundry.sh/) (`forge` on PATH).
 
 ## Layout
 
 ```text
-src/legacy/identity/IdentityRegistry.sol
-src/legacy/token/PermissionedToken.sol
-src/trex/TrexIdentityRegistry.sol
-src/trex/TrexModularCompliance.sol
-src/trex/TrexToken.sol
-script/deploy/DeployCore.s.sol
+src/trex/TrexIdentityRegistry.sol   # COMPLIANCE_ROLE identity lifecycle
+src/trex/TrexModularCompliance.sol  # GOVERNANCE_ROLE pause + limits; canTransfer
+src/trex/TrexToken.sol              # execution-time compliance in _update
+src/legacy/                         # non-production MVP contracts
 script/deploy/DeployTREX.s.sol
-test/unit/
-test/security/
+test/unit/Trex*.t.sol
+test/security/TrexComplianceSecurity.t.sol
 deployments/{chainId}.json
-deployments/{chainId}.backend.env
 ```
 
-After deploy, run `bash ../root/scripts/sync-local-env.sh` from the monorepo root to propagate addresses.
+## Security invariants
 
-## Compliance notes
+- **No PII on-chain** — only `bytes32` identity reference hashes.
+- **`canTransfer` before balance mutation** — `_update` checks registry verification and modular compliance.
+- **Revocation is immediate** — `deleteIdentity` blocks send and receive on the next transfer.
+- **Custom errors** — `NonCompliantSender`, `NonCompliantRecipient`, `TokenPaused`, `TransferNotCompliant`, `IdentityAlreadyRegistered`, etc.
 
-- Production transfers enforce compliance at execution time through token hooks and modular compliance checks.
-- Compliance and governance agent permissions are separated in deployment and runtime roles.
-- No raw PII on-chain — only identity reference hashes and registry/compliance state.
+## Acceptance checklist
+
+- [ ] `forge build && forge test` pass
+- [ ] Unauthorized agent cannot `registerIdentity` or `pause`
+- [ ] Revoked identity cannot send or receive
+- [ ] Mint to non-compliant wallet reverts
+- [ ] G1 evidence recorded in [`testnet-evidence.md`](../_docs/testnet-evidence.md) for target network

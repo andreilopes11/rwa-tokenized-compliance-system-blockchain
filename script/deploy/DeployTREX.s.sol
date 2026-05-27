@@ -48,10 +48,13 @@ contract DeployTREX {
         ) {
             revert InvalidRoleAddress();
         }
-        if (
-            governanceAgent == complianceAgent || governanceAgent == superAdmin
-                || complianceAgent == superAdmin
-        ) {
+        if (_hasOverlappingSoDAssignments(
+                superAdmin,
+                governanceAgent,
+                complianceAgent,
+                lifecycleAgent,
+                transferManagerAgent
+            )) {
             revert OverlappingRoleAssignments();
         }
 
@@ -122,5 +125,23 @@ contract DeployTREX {
 
     function _deploymentJsonPath(uint256 chainId) private pure returns (string memory) {
         return string.concat("deployments/", Strings.toString(chainId), ".json");
+    }
+
+    /// @dev Governance and compliance agents must never share keys (on-chain SoD).
+    function _hasOverlappingSoDAssignments(
+        address superAdmin,
+        address governanceAgent,
+        address complianceAgent,
+        address lifecycleAgent,
+        address transferManagerAgent
+    ) private pure returns (bool) {
+        if (governanceAgent == complianceAgent) return true;
+        if (governanceAgent == superAdmin) return true;
+        if (complianceAgent == superAdmin) return true;
+        if (governanceAgent == lifecycleAgent) return true;
+        if (governanceAgent == transferManagerAgent) return true;
+        if (complianceAgent == lifecycleAgent) return true;
+        if (complianceAgent == transferManagerAgent) return true;
+        return false;
     }
 }

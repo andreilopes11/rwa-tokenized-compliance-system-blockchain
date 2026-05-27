@@ -19,6 +19,7 @@ contract TrexToken is ERC20, ERC20Burnable, AccessControl {
     error NonCompliantSender(address wallet);
     error NonCompliantRecipient(address wallet);
     error TokenPaused();
+    error TransferNotCompliant();
 
     event ForcedTransfer(
         address indexed operator,
@@ -84,7 +85,9 @@ contract TrexToken is ERC20, ERC20Burnable, AccessControl {
         if (to != address(0) && !modularCompliance.isWalletVerified(to)) {
             revert NonCompliantRecipient(to);
         }
-        if (!modularCompliance.canTransfer(from, to, amount)) revert TokenPaused();
+        if (!modularCompliance.canTransfer(from, to, amount)) {
+            revert TransferNotCompliant();
+        }
 
         super._update(from, to, amount);
     }

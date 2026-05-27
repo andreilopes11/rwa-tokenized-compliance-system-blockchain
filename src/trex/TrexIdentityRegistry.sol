@@ -58,7 +58,16 @@ contract TrexIdentityRegistry is AccessControl, ITrexIdentityRegistry {
         emit IdentityRegistered(wallet, referenceHash, msg.sender);
     }
 
+    /// @notice ERC-3643-aligned alias for identity revocation.
+    function deleteIdentity(address wallet) external onlyRole(COMPLIANCE_ROLE) {
+        _removeIdentity(wallet);
+    }
+
     function removeIdentity(address wallet) external onlyRole(COMPLIANCE_ROLE) {
+        _removeIdentity(wallet);
+    }
+
+    function _removeIdentity(address wallet) private {
         if (wallet == address(0)) revert InvalidWallet();
 
         Identity storage identity = identities[wallet];

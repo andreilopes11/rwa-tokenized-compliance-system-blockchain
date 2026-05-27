@@ -62,6 +62,15 @@ contract TrexIdentityRegistryTest {
         registry.removeIdentity(alice);
     }
 
+    function testDeleteIdentityAliasRevokesWallet() public {
+        vm.prank(complianceAgent);
+        registry.registerIdentity(alice, aliceHash);
+
+        vm.prank(complianceAgent);
+        registry.deleteIdentity(alice);
+        assert(!registry.isVerified(alice));
+    }
+
     function testRevocationImmediatelyInvalidatesIdentity() public {
         vm.prank(complianceAgent);
         registry.registerIdentity(alice, aliceHash);
