@@ -1,6 +1,6 @@
 # RWA Tokenized Compliance — Blockchain
 
-Foundry contracts for permissioned RWA security tokens: legacy identity registry and ERC-3643 / T-REX deploy path.
+Foundry contracts for permissioned RWA security tokens: production TREX-style contracts with explicit role separation, plus legacy migration contracts.
 
 ## Contract with `_docs`
 
@@ -14,8 +14,8 @@ Foundry contracts for permissioned RWA security tokens: legacy identity registry
 
 | Profile | Script | Use |
 |---------|--------|-----|
-| `mvp` | `script/deploy/DeployCore.s.sol` | Legacy registry — local Anvil, Sepolia |
-| `trex` | `script/deploy/DeployTREX.s.sol` | ERC-3643 / T-REX — requires `lib/T-REX` |
+| `mvp` | `script/deploy/DeployCore.s.sol` | Legacy registry (migration and local testing only) |
+| `trex` | `script/deploy/DeployTREX.s.sol` | Production role-separated TREX-style deploy |
 
 ## Commands
 
@@ -32,6 +32,9 @@ npm run deploy:sepolia
 ```text
 src/legacy/identity/IdentityRegistry.sol
 src/legacy/token/PermissionedToken.sol
+src/trex/TrexIdentityRegistry.sol
+src/trex/TrexModularCompliance.sol
+src/trex/TrexToken.sol
 script/deploy/DeployCore.s.sol
 script/deploy/DeployTREX.s.sol
 test/unit/
@@ -44,6 +47,6 @@ After deploy, run `bash ../root/scripts/sync-local-env.sh` from the monorepo roo
 
 ## Compliance notes
 
-- Transfers enforce identity registry eligibility on every `transfer` / `transferFrom`.
-- No raw PII on-chain — only identity hashes and registry state.
-- Issuer `pause` / `unpause` for emergency compliance controls.
+- Production transfers enforce compliance at execution time through token hooks and modular compliance checks.
+- Compliance and governance agent permissions are separated in deployment and runtime roles.
+- No raw PII on-chain — only identity reference hashes and registry/compliance state.

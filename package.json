@@ -13,8 +13,8 @@
     "local:up": "bash scripts/run-local.sh",
     "local:down": "bash scripts/stop-local.sh",
     "deploy:local": "bash scripts/deploy-local.sh",
-    "deploy:sepolia": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify && node scripts/write-backend-env.mjs",
-    "deploy:sepolia:trex": "forge script script/deploy/DeployTREX.s.sol:DeployTREX --rpc-url ${SEPOLIA_RPC_URL} --broadcast"
+    "deploy:sepolia": "mkdir -p deployments && forge script script/deploy/DeployTREX.s.sol:DeployTREX --rpc-url ${SEPOLIA_RPC_URL} --broadcast && node scripts/write-backend-env.mjs",
+    "deploy:sepolia:legacy": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify && node scripts/write-backend-env.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1"
