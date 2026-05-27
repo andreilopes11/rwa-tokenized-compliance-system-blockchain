@@ -128,13 +128,14 @@ contract DeployTREX {
     }
 
     /// @dev Governance and compliance agents must never share keys (on-chain SoD).
+    /// All privileged agents and super-admin must be unique to avoid key concentration.
     function _hasOverlappingSoDAssignments(
         address superAdmin,
         address governanceAgent,
         address complianceAgent,
         address lifecycleAgent,
         address transferManagerAgent
-    ) private pure returns (bool) {
+    ) internal pure returns (bool) {
         if (governanceAgent == complianceAgent) return true;
         if (governanceAgent == superAdmin) return true;
         if (complianceAgent == superAdmin) return true;
@@ -142,6 +143,9 @@ contract DeployTREX {
         if (governanceAgent == transferManagerAgent) return true;
         if (complianceAgent == lifecycleAgent) return true;
         if (complianceAgent == transferManagerAgent) return true;
+        if (lifecycleAgent == transferManagerAgent) return true;
+        if (lifecycleAgent == superAdmin) return true;
+        if (transferManagerAgent == superAdmin) return true;
         return false;
     }
 }

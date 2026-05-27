@@ -57,6 +57,36 @@ contract TrexComplianceSecurityTest {
         registry.registerIdentity(mallory, keccak256("mallory-doc"));
     }
 
+    function testSecurity_PrivilegedFunctionsAreRoleBound() public {
+        vm.prank(outsider());
+        vm.expectRevert();
+        token.mint(alice, 1 ether);
+
+        vm.prank(outsider());
+        vm.expectRevert();
+        token.forceTransfer(alice, bob, 1 ether);
+
+        vm.prank(outsider());
+        vm.expectRevert();
+        token.pause();
+
+        vm.prank(outsider());
+        vm.expectRevert();
+        token.unpause();
+
+        vm.prank(outsider());
+        vm.expectRevert();
+        modularCompliance.setLimits(1 ether);
+
+        vm.prank(outsider());
+        vm.expectRevert();
+        modularCompliance.setPaused(true);
+
+        vm.prank(outsider());
+        vm.expectRevert();
+        registry.deleteIdentity(alice);
+    }
+
     function testSecurity_RevokedIdentityCannotSendOrReceiveImmediately() public {
         vm.prank(complianceAgent);
         registry.removeIdentity(alice);
@@ -152,8 +182,23 @@ contract TrexComplianceSecurityTest {
         assert(token.balanceOf(mallory) == malloryBefore);
     }
 
+    function testSecurityFuzz_PauseBlocksAnyTransferAmount(uint96 amount) public {
+        uint256 boundedAmount = uint256(amount % 5 ether) + 1;
+
+        vm.prank(governanceAgent);
+        token.pause();
+
+        vm.prank(alice);
+        vm.expectRevert(TrexToken.TokenPaused.selector);
+        token.transfer(bob, boundedAmount);
+    }
+
     function _register(address wallet, string memory seed) private {
         vm.prank(complianceAgent);
         registry.registerIdentity(wallet, keccak256(bytes(seed)));
+    }
+
+    function outsider() private pure returns (address) {
+        return address(0xDEAD);
     }
 }
