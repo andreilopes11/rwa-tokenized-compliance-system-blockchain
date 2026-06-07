@@ -8,6 +8,10 @@
     "test": "forge test -vvv",
     "test:unit": "forge test --match-path \"test/unit/*.t.sol\" -vvv",
     "test:security": "forge test --match-path \"test/security/*.t.sol\" -vvv",
+    "coverage": "forge coverage --ir-minimum --report summary",
+    "lint": "solhint \"src/**/*.sol\"",
+    "slither": "slither . --config-file slither.config.json",
+    "deploy:tenant": "mkdir -p deployments && forge script script/deploy/DeployTenantTrex.s.sol:DeployTenantTrex --rpc-url ${RPC_URL} --broadcast",
     "check:tooling": "bash scripts/check-tooling.sh",
     "local:fresh": "bash scripts/local-fresh.sh",
     "local:up": "bash scripts/run-local.sh",
@@ -17,6 +21,10 @@
     "deploy:sepolia:legacy": "mkdir -p deployments && forge script script/deploy/DeployCore.s.sol:DeployCore --rpc-url ${SEPOLIA_RPC_URL} --broadcast --verify && node scripts/write-backend-env.mjs"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "5.6.1"
+    "@openzeppelin/contracts": "5.6.1",
+    "@openzeppelin/contracts-upgradeable": "^5.6.1"
+  },
+  "devDependencies": {
+    "solhint": "^6.0.0"
   }
 }

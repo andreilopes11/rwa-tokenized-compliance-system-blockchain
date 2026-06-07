@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {TrexIdentityRegistry} from "../../src/trex/TrexIdentityRegistry.sol";
 import {TrexModularCompliance} from "../../src/trex/TrexModularCompliance.sol";
@@ -60,8 +61,15 @@ contract DeployTREX {
 
         vm.startBroadcast(privateKey);
         identityRegistry = new TrexIdentityRegistry(superAdmin, complianceAgent);
+
+        TrexModularCompliance complianceImpl = new TrexModularCompliance();
+        bytes memory initData = abi.encodeCall(
+            TrexModularCompliance.initialize,
+            (superAdmin, governanceAgent, address(identityRegistry))
+        );
         modularCompliance =
-            new TrexModularCompliance(superAdmin, governanceAgent, address(identityRegistry));
+            TrexModularCompliance(address(new ERC1967Proxy(address(complianceImpl), initData)));
+
         token = new TrexToken(
             "VaultGuard Tokenized RWA",
             "VGRWA",
@@ -69,8 +77,10 @@ contract DeployTREX {
             governanceAgent,
             lifecycleAgent,
             transferManagerAgent,
-            address(modularCompliance)
+            address(modularCompliance),
+            0
         );
+        modularCompliance.bindToken(address(token));
         vm.stopBroadcast();
 
         _writeDeploymentJson(

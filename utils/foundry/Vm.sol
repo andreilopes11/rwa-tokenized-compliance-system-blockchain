@@ -6,6 +6,16 @@ interface Vm {
 
     function envUint(string calldata name) external returns (uint256);
 
+    function envAddress(string calldata name) external returns (address);
+
+    function envString(string calldata name) external returns (string memory);
+
+    function envOr(string calldata name, uint256 defaultValue) external returns (uint256);
+
+    function envOr(string calldata name, address defaultValue) external returns (address);
+
+    function warp(uint256 newTimestamp) external;
+
     function expectEmit(
         bool checkTopic1,
         bool checkTopic2,
@@ -32,6 +42,14 @@ interface Vm {
         string calldata valueKey,
         string calldata value
     ) external returns (string memory);
+
+    function serializeUint(string calldata objectKey, string calldata valueKey, uint256 value)
+        external
+        returns (string memory);
+
+    function serializeBool(string calldata objectKey, string calldata valueKey, bool value)
+        external
+        returns (string memory);
 
     function startBroadcast(uint256 privateKey) external;
 

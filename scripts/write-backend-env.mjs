@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Writes deployments/{chainId}.backend.env from deployments/{chainId}.json
- * for root/scripts/sync-local-env.sh and backend consumers.
+ * for root/scripts/stack.ps1 sync and backend consumers.
  */
 import fs from "node:fs";
 import path from "node:path";

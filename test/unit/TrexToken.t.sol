@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {TrexIdentityRegistry} from "../../src/trex/TrexIdentityRegistry.sol";
 import {TrexModularCompliance} from "../../src/trex/TrexModularCompliance.sol";
 import {TrexToken} from "../../src/trex/TrexToken.sol";
+import {TrexDeploy} from "../helpers/TrexDeploy.sol";
 import {Vm} from "../../utils/foundry/Vm.sol";
 
 contract TrexTokenTest {
@@ -27,7 +28,7 @@ contract TrexTokenTest {
     function setUp() public {
         registry = new TrexIdentityRegistry(superAdmin, complianceAgent);
         modularCompliance =
-            new TrexModularCompliance(superAdmin, governanceAgent, address(registry));
+            TrexDeploy.deployCompliance(superAdmin, governanceAgent, address(registry));
         token = new TrexToken(
             "VaultGuard Tokenized RWA",
             "VGRWA",
@@ -35,8 +36,10 @@ contract TrexTokenTest {
             governanceAgent,
             lifecycleAgent,
             transferManagerAgent,
-            address(modularCompliance)
+            address(modularCompliance),
+            0
         );
+        modularCompliance.bindToken(address(token));
     }
 
     function testMintToNonCompliantWalletReverts() public {
