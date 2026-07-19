@@ -8,7 +8,9 @@ import {TenantTrexLib} from "./TenantTrexLib.sol";
 /// @notice Production per-tenant T-REX deployment. Reads agent addresses (Safe / HSM-KMS
 ///         principals) from the environment, deploys the full stack with the TimelockController
 ///         as the sole upgrade authority, and writes an auditable JSON artifact listing every
-///         address and role assignment.
+///         address and role assignment (token, IR, compliance, registries, modules, …).
+/// @dev Marketplace visibility (PUBLIC/PRIVATE) is off-chain only. For multi-asset tenants,
+///         prefer reusing `identityRegistry` via DeployAdditionalTrexToken rather than a new IR.
 ///
 /// Required env: PRIVATE_KEY, GOVERNANCE_SAFE, COMPLIANCE_AGENT, LIFECYCLE_AGENT,
 ///   TRANSFER_MANAGER_AGENT, PAUSER, TENANT_TREASURY, FORCE_SYNC_OWNER_1..3.

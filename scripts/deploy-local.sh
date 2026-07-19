@@ -62,8 +62,9 @@ resolved_registry="$(cast call "$token_address" 'identityRegistry()(address)' --
 
 mkdir -p "$ROOT_DIR/deployments"
 
-node -e 'const fs=require("fs"); const [path, registry, token, owner] = process.argv.slice(1); fs.writeFileSync(path, JSON.stringify({ profile: "mvp", blockchainMode: "mvp", identityRegistry: registry, permissionedToken: token, owner }, null, 2) + "\n");' \
-    "$ROOT_DIR/deployments/$LOCAL_CHAIN_ID.json" \
+deployment_json="$(to_node_fs_path "$ROOT_DIR/deployments/$LOCAL_CHAIN_ID.json")"
+run_node -e 'const fs=require("fs"); const [path, registry, token, owner] = process.argv.slice(1); fs.writeFileSync(path, JSON.stringify({ profile: "mvp", blockchainMode: "mvp", identityRegistry: registry, permissionedToken: token, owner }, null, 2) + "\n");' \
+    "$deployment_json" \
     "$registry_address" \
     "$token_address" \
     "$owner_address"
@@ -71,7 +72,7 @@ node -e 'const fs=require("fs"); const [path, registry, token, owner] = process.
 export CHAIN_ID="$LOCAL_CHAIN_ID"
 export RPC_URL="$LOCAL_RPC_URL"
 export PRIVATE_KEY="$LOCAL_DEPLOY_PRIVATE_KEY"
-node "$ROOT_DIR/scripts/write-backend-env.mjs"
+run_node "$(to_node_fs_path "$ROOT_DIR/scripts/write-backend-env.mjs")"
 
 log "local deployment complete"
 log "IdentityRegistry: $registry_address"

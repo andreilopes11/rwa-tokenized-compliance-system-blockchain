@@ -31,18 +31,60 @@ require_cmd() {
     command -v "$cmd" >/dev/null 2>&1 || fail "missing command: $cmd"
 }
 
-load_dotenv() {
-    local dotenv_path="$ROOT_DIR/.env"
-    local sanitized_dotenv
-    if [ -f "$dotenv_path" ]; then
-        sanitized_dotenv="$(mktemp)"
-        sed 's/\r$//' "$dotenv_path" > "$sanitized_dotenv"
-        set -a
-        # shellcheck disable=SC1090
-        . "$sanitized_dotenv"
-        set +a
-        rm -f "$sanitized_dotenv"
+to_node_fs_path() {
+    local path="$1"
+    if command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "$path"
+        return
     fi
+    if [[ "$path" =~ ^/([a-zA-Z])/(.*)$ ]]; then
+        printf '%s\n' "${BASH_REMATCH[1]^}:/${BASH_REMATCH[2]}"
+        return
+    fi
+    printf '%s\n' "$path"
+}
+
+run_node() {
+    MSYS2_ARG_CONV_EXCL='*' node "$@"
+}
+
+# Load RPC/keys from config JSON (default: config/local.json).
+# Usage: load_dotenv [config/sepolia.json]
+load_dotenv() {
+    local config_json="${1:-$ROOT_DIR/config/local.json}"
+    if [[ "$config_json" != /* ]]; then
+        config_json="$ROOT_DIR/$config_json"
+    fi
+    [ -f "$config_json" ] || fail "missing blockchain config: $config_json"
+
+    # Win32 Node cannot open Git Bash paths like /d/... (becomes D:\d\...).
+    local node_config
+    node_config="$(to_node_fs_path "$config_json")"
+
+    eval "$(
+        run_node -e '
+const fs = require("fs");
+const c = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const out = (k, v) => {
+  if (v === undefined || v === null || String(v).length === 0) return;
+  process.stdout.write("export " + k + "=" + JSON.stringify(String(v)) + "\n");
+};
+out("RPC_URL", c.rpcUrl);
+out("LOCAL_RPC_URL", c.rpcUrl);
+out("SEPOLIA_RPC_URL", c.sepoliaRpcUrl || c.rpcUrl);
+out("CHAIN_ID", c.chainId);
+out("LOCAL_CHAIN_ID", c.chainId);
+out("PRIVATE_KEY", c.privateKey);
+out("LOCAL_PRIVATE_KEY", c.privateKey);
+out("ADMIN_PRIVATE_KEY", c.privateKey);
+out("GOVERNANCE_AGENT_PRIVATE_KEY", c.governanceAgentPrivateKey);
+out("COMPLIANCE_AGENT_PRIVATE_KEY", c.complianceAgentPrivateKey);
+out("LIFECYCLE_AGENT_PRIVATE_KEY", c.lifecycleAgentPrivateKey);
+out("TRANSFER_MANAGER_AGENT_PRIVATE_KEY", c.transferManagerAgentPrivateKey);
+out("ETHERSCAN_API_KEY", c.etherscanApiKey);
+out("BLOCKCHAIN_PROFILE", c.blockchainProfile);
+' "$node_config"
+    )"
 }
 
 ensure_local_state_dir() {
@@ -99,13 +141,15 @@ resolve_contract_artifact() {
 
 artifact_bytecode() {
     local artifact_path="$1"
-    node -e 'const fs=require("fs"); const artifact=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write(artifact.bytecode.object);' "$artifact_path"
+    local node_artifact
+    node_artifact="$(to_node_fs_path "$artifact_path")"
+    run_node -e 'const fs=require("fs"); const artifact=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); process.stdout.write(artifact.bytecode.object);' "$node_artifact"
 }
 
 json_field() {
     local json_payload="$1"
     local field_name="$2"
-    node -e 'const payload=JSON.parse(process.argv[1]); const field=process.argv[2]; const value=payload[field]; if (value === undefined || value === null) process.exit(1); process.stdout.write(String(value));' "$json_payload" "$field_name"
+    run_node -e 'const payload=JSON.parse(process.argv[1]); const field=process.argv[2]; const value=payload[field]; if (value === undefined || value === null) process.exit(1); process.stdout.write(String(value));' "$json_payload" "$field_name"
 }
 
 wait_for_rpc() {

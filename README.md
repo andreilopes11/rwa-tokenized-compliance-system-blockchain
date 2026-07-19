@@ -6,16 +6,37 @@ Foundry contracts for **production** ERC-3643 / T-REX-style permissioned RWA tok
 
 | Item | Link |
 |------|------|
-| Normative spec | [`../_docs/contracts-erc3643.md`](../_docs/contracts-erc3643.md) |
-| Deploy & keys | [`../_docs/deployment.md`](../_docs/deployment.md) |
-| Release gate G1 | [`../_docs/testnet-evidence.md`](../_docs/testnet-evidence.md) |
+| Product / tech specs | [`../_docs/FUNCTIONAL.md`](../_docs/FUNCTIONAL.md) · [`../_docs/TECHNICAL.md`](../_docs/TECHNICAL.md) |
+| Foundation rules | [`../_docs/based_rules.md`](../_docs/based_rules.md) |
+| Phased prompts | [`../_docs/PHASED-IMPLEMENTATION-PROMPT.md`](../_docs/PHASED-IMPLEMENTATION-PROMPT.md) |
 
-## Production deploy (default)
+## Standalone local
+
+Config: [`config/local.json`](config/local.json) (Anvil). No `.env`.
+
+```bash
+npm install
+npm run local:up      # Anvil + MVP deploy (fast; skips forge tests)
+npm run local:fresh   # wipe artifacts + rebuild + deploy
+npm test
+```
+
+## First public chain deploy (Sepolia TREX)
+
+See [`DEPLOY-SEPOLIA.md`](DEPLOY-SEPOLIA.md). Fill [`config/sepolia.json`](config/sepolia.json) locally, then:
+
+```bash
+npm run deploy:sepolia
+```
+
+Wire `deployments/11155111.json` into Elastic Beanstalk + Vercel. This repo does not depend on backend/frontend at deploy time.
+
+## Production contract path (default)
 
 | Script | Profile | Use |
 |--------|---------|-----|
-| `script/deploy/DeployTREX.s.sol` | `trex` | **Production** — Identity Registry, Modular Compliance, Token, role-separated agents |
-| `script/deploy/DeployCore.s.sol` | `mvp` | Legacy only (non-production) |
+| `script/deploy/DeployTREX.s.sol` | `trex` | **Sepolia / mainnet path** — IR, Modular Compliance, Token, SoD agents |
+| `script/deploy/DeployCore.s.sol` | `mvp` | Legacy only (Anvil / migration) |
 
 ### Agent roles (on-chain SoD)
 

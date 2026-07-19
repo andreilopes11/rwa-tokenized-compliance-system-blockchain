@@ -9,6 +9,9 @@ import {TrexToken} from "../../src/trex/TrexToken.sol";
 import {Vm} from "../../utils/foundry/Vm.sol";
 
 /// @notice Production TREX-like deployment with explicit role separation.
+/// @dev Marketplace visibility (PUBLIC/PRIVATE) is off-chain only — never encoded here.
+/// Preferred multi-asset mode: reuse this IdentityRegistry for additional tokens
+/// (see DeployAdditionalTrexToken.s.sol) so KYC is shared across offerings (INV-10).
 contract DeployTREX {
     Vm private constant vm =
         Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
@@ -121,6 +124,7 @@ contract DeployTREX {
         string memory objectKey = "deployment";
         vm.serializeString(objectKey, "profile", "trex");
         vm.serializeString(objectKey, "blockchainMode", "trex");
+        vm.serializeUint(objectKey, "chainId", chainId);
         vm.serializeAddress(objectKey, "identityRegistry", identityRegistry);
         vm.serializeAddress(objectKey, "modularCompliance", modularCompliance);
         vm.serializeAddress(objectKey, "token", token);

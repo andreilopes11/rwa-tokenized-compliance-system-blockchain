@@ -45,6 +45,8 @@ contract MerkleDistributor is Ownable {
 
     /// @param amount Entitlement encoded in the Merkle leaf `keccak256(account, amount)`.
     function claim(address account, uint256 amount, bytes32[] calldata proof) external {
+        // Claim windows are calendar-time (hours/days); proposer skew of a few seconds is acceptable.
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp > claimDeadline) revert ClaimWindowClosed();
         if (hasClaimed[account]) revert AlreadyClaimed();
 
@@ -58,6 +60,7 @@ contract MerkleDistributor is Ownable {
 
     /// @notice Sweep unclaimed tokens to the tenant treasury after the window closes.
     function reclaim() external onlyOwner {
+        // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp <= claimDeadline) revert ClaimWindowOpen();
         if (reclaimed) revert AlreadyReclaimed();
         reclaimed = true;

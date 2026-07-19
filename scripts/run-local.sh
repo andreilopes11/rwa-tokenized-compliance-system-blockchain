@@ -38,8 +38,13 @@ fi
 log "running build"
 forge build
 
-log "running tests"
-forge test -vvv
+# Full suite is slow; stack / local bring-up skip unless RUN_FORGE_TESTS=true.
+if [ "${RUN_FORGE_TESTS:-false}" = "true" ]; then
+    log "running tests"
+    forge test -vvv
+else
+    log "skipping forge tests (set RUN_FORGE_TESTS=true to enable)"
+fi
 
 if wait_for_rpc "$LOCAL_RPC_URL" 2; then
     remote_chain_id="$(cast chain-id --rpc-url "$LOCAL_RPC_URL")"

@@ -8,8 +8,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const chainId = process.env.CHAIN_ID ?? process.env.LOCAL_CHAIN_ID ?? "31337";
-const jsonPath = path.join(root, "deployments", `${chainId}.json`);
+const deploymentChainHint = process.env.CHAIN_ID ?? process.env.LOCAL_CHAIN_ID;
+let chainId = deploymentChainHint ?? "31337";
+let jsonPath = path.join(root, "deployments", `${chainId}.json`);
+
+// If CHAIN_ID unset but Sepolia artifact exists, prefer it over Anvil default.
+if (!deploymentChainHint && !fs.existsSync(jsonPath) && fs.existsSync(path.join(root, "deployments", "11155111.json"))) {
+  chainId = "11155111";
+  jsonPath = path.join(root, "deployments", `${chainId}.json`);
+}
+
 const envPath = path.join(root, "deployments", `${chainId}.backend.env`);
 
 if (!fs.existsSync(jsonPath)) {
