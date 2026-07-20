@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Deploy the production TREX suite to the local Anvil chain — parity with Sepolia
+# (same DeployTREX.s.sol, same separate SoD agent keys). Legacy MVP contracts remain
+# in src/legacy/ for migration testing only (see scripts/deploy-sepolia-legacy.sh).
+
 # shellcheck disable=SC1091
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
@@ -23,59 +27,28 @@ if [ "$remote_chain_id" != "$LOCAL_CHAIN_ID" ]; then
     fail "unexpected chain id at $LOCAL_RPC_URL: expected $LOCAL_CHAIN_ID, got $remote_chain_id"
 fi
 
-log "building contracts"
-forge build >/dev/null
-
-owner_address="$(cast wallet address --private-key "$LOCAL_DEPLOY_PRIVATE_KEY")"
-identity_artifact="$(resolve_contract_artifact IdentityRegistry)"
-token_artifact="$(resolve_contract_artifact PermissionedToken)"
-
-registry_bytecode="$(artifact_bytecode "$identity_artifact")"
-registry_constructor_args="$(cast abi-encode 'constructor(address)' "$owner_address")"
-
-log "deploying IdentityRegistry"
-registry_receipt="$(cast send --json \
-    --private-key "$LOCAL_DEPLOY_PRIVATE_KEY" \
-    --rpc-url "$LOCAL_RPC_URL" \
-    --create "${registry_bytecode}${registry_constructor_args#0x}")"
-registry_address="$(json_field "$registry_receipt" contractAddress)"
-
-token_bytecode="$(artifact_bytecode "$token_artifact")"
-token_constructor_args="$(cast abi-encode 'constructor(string,string,address,address)' \
-    'Tokenized RWA Compliance Share' \
-    'RWAC' \
-    "$registry_address" \
-    "$owner_address")"
-
-log "deploying PermissionedToken"
-token_receipt="$(cast send --json \
-    --private-key "$LOCAL_DEPLOY_PRIVATE_KEY" \
-    --rpc-url "$LOCAL_RPC_URL" \
-    --create "${token_bytecode}${token_constructor_args#0x}")"
-token_address="$(json_field "$token_receipt" contractAddress)"
-
-resolved_owner="$(cast call "$registry_address" 'owner()(address)' --rpc-url "$LOCAL_RPC_URL")"
-resolved_registry="$(cast call "$token_address" 'identityRegistry()(address)' --rpc-url "$LOCAL_RPC_URL")"
-
-[ "$resolved_owner" = "$owner_address" ] || fail "registry owner does not match the expected deployer"
-[ "${resolved_registry,,}" = "${registry_address,,}" ] || fail "token points to an unexpected registry"
+# Separate SoD agent keys come from config/local.json (DeployTREX rejects overlaps).
+[ -n "${PRIVATE_KEY:-}" ] || fail "set privateKey (deployer / super-admin) in config/local.json"
+[ -n "${GOVERNANCE_AGENT_PRIVATE_KEY:-}" ] || fail "set governanceAgentPrivateKey in config/local.json"
+[ -n "${COMPLIANCE_AGENT_PRIVATE_KEY:-}" ] || fail "set complianceAgentPrivateKey in config/local.json"
+[ -n "${LIFECYCLE_AGENT_PRIVATE_KEY:-}" ] || fail "set lifecycleAgentPrivateKey in config/local.json"
+[ -n "${TRANSFER_MANAGER_AGENT_PRIVATE_KEY:-}" ] || fail "set transferManagerAgentPrivateKey in config/local.json"
 
 mkdir -p "$ROOT_DIR/deployments"
 
-deployment_json="$(to_node_fs_path "$ROOT_DIR/deployments/$LOCAL_CHAIN_ID.json")"
-run_node -e 'const fs=require("fs"); const [path, registry, token, owner] = process.argv.slice(1); fs.writeFileSync(path, JSON.stringify({ profile: "mvp", blockchainMode: "mvp", identityRegistry: registry, permissionedToken: token, owner }, null, 2) + "\n");' \
-    "$deployment_json" \
-    "$registry_address" \
-    "$token_address" \
-    "$owner_address"
-
-export CHAIN_ID="$LOCAL_CHAIN_ID"
+log "deploying TREX suite to local chain $LOCAL_CHAIN_ID (parity with Sepolia)"
 export RPC_URL="$LOCAL_RPC_URL"
-export PRIVATE_KEY="$LOCAL_DEPLOY_PRIVATE_KEY"
+export CHAIN_ID="$LOCAL_CHAIN_ID"
+forge script script/deploy/DeployTREX.s.sol:DeployTREX \
+    --rpc-url "$LOCAL_RPC_URL" \
+    --broadcast
+
+[ -f "$ROOT_DIR/deployments/$LOCAL_CHAIN_ID.json" ] \
+    || fail "expected deployments/$LOCAL_CHAIN_ID.json after DeployTREX"
+
+export ADMIN_PRIVATE_KEY="${ADMIN_PRIVATE_KEY:-$PRIVATE_KEY}"
 run_node "$(to_node_fs_path "$ROOT_DIR/scripts/write-backend-env.mjs")"
 
-log "local deployment complete"
-log "IdentityRegistry: $registry_address"
-log "PermissionedToken: $token_address"
-log "owner: $owner_address"
+log "local TREX deployment complete"
+log "JSON: deployments/$LOCAL_CHAIN_ID.json"
 log "backend env file: deployments/$LOCAL_CHAIN_ID.backend.env"

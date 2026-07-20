@@ -1,12 +1,12 @@
 {
-  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/rOl8FD19c1vwPhb4NM4YP",
   "chainId": 11155111,
-  "privateKey": "",
-  "governanceAgentPrivateKey": "",
-  "complianceAgentPrivateKey": "",
-  "lifecycleAgentPrivateKey": "",
-  "transferManagerAgentPrivateKey": "",
-  "sepoliaRpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+  "privateKey": "0xcda5e50f7a370bdebcc0ea83a8c189055f06426cf82562a85f894a8101301d59",
+  "governanceAgentPrivateKey": "0xb1140a90f3646ab341adc7554c9bbcd646ca13b6f18e3f7c6872509a58a6a1e1",
+  "complianceAgentPrivateKey": "0x60b96729ec73406feb79d57090bab66bbe51ceca36f94f50ba079829c75beb8f",
+  "lifecycleAgentPrivateKey": "0xc93b74aa5548b2dc38489842990b13b51a1577b75a9ceb4d003946bbdb715f97",
+  "transferManagerAgentPrivateKey": "0x463f1b34fe0870751d5061d6b4d465674d5dd96e6ad3e9dea97c91f3b8202cac",
+  "sepoliaRpcUrl": "https://eth-sepolia.g.alchemy.com/v2/rOl8FD19c1vwPhb4NM4YP",
   "etherscanApiKey": "",
   "blockchainProfile": "trex"
 }

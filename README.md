@@ -16,7 +16,7 @@ Config: [`config/local.json`](config/local.json) (Anvil). No `.env`.
 
 ```bash
 npm install
-npm run local:up      # Anvil + MVP deploy (fast; skips forge tests)
+npm run local:up      # Anvil + TREX deploy (parity with Sepolia; skips forge tests)
 npm run local:fresh   # wipe artifacts + rebuild + deploy
 npm test
 ```
@@ -29,14 +29,18 @@ See [`DEPLOY-SEPOLIA.md`](DEPLOY-SEPOLIA.md). Fill [`config/sepolia.json`](confi
 npm run deploy:sepolia
 ```
 
-Wire `deployments/11155111.json` into Elastic Beanstalk + Vercel. This repo does not depend on backend/frontend at deploy time.
+This repo does not depend on backend/frontend at deploy time.
+
+Live Sepolia addresses (committed, no secrets): [`config/sepolia-addresses.json`](config/sepolia-addresses.json).
 
 ## Production contract path (default)
 
 | Script | Profile | Use |
 |--------|---------|-----|
-| `script/deploy/DeployTREX.s.sol` | `trex` | **Sepolia / mainnet path** — IR, Modular Compliance, Token, SoD agents |
-| `script/deploy/DeployCore.s.sol` | `mvp` | Legacy only (Anvil / migration) |
+| `script/deploy/DeployTREX.s.sol` | `trex` | **Local (Anvil) / Sepolia / mainnet path** — IR, Modular Compliance, Token, SoD agents |
+| `script/deploy/DeployCore.s.sol` | `mvp` | Legacy only (`src/legacy/` migration tests, `deploy:sepolia:legacy`) |
+
+Local (`npm run local:up`) and Sepolia (`npm run deploy:sepolia`) run the **same** `DeployTREX.s.sol` for environment parity; both require four distinct SoD agent keys in their config JSON.
 
 ### Agent roles (on-chain SoD)
 
@@ -99,7 +103,9 @@ deployments/{chainId}-tenant.json
 - **Modular compliance**: five pluggable modules gate `canTransfer`; module bookkeeping runs from
   post-mutation hooks (`transferred`/`created`/`destroyed`) callable only by the bound token.
 - **Force sync**: `ForceSyncGovernor` requires two distinct owner approvals (2-of-N) to sync an
-  identity on-chain — the on-chain mirror of the backend four-eyes control.
+  identity on-chain — the on-chain mirror of the backend four-eyes control. Because the two-role
+  model routes force-sync to SUPER_ADMIN, **four-eyes requires at least two distinct SUPER_ADMIN
+  accounts** (each an owner of the governor); a single admin cannot self-approve (`DuplicateApproval`).
 - **SoD**: deployment asserts governance / compliance / lifecycle / transfer-manager / pauser are
   distinct; the deployer renounces every temporary role at the end.
 - Static analysis configs: `.solhint.json`, `slither.config.json`. Run `npm run lint` / `npm run slither`.

@@ -1,0 +1,21 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "profile": "trex",
+  "rpcHint": "https://eth-sepolia.g.alchemy.com/v2/rOl8FD19c1vwPhb4NM4YP",
+  "blockExplorer": "https://sepolia.etherscan.io",
+  "deployedAtBlock": 11307738,
+  "identityRegistry": "0xDf47E753589f6f4337999DC72bF0530301AEDe5b",
+  "modularCompliance": "0xAd8C670c58a5e00baA3BCC5dd9C1eE607EBE53EB",
+  "token": "0xC85bB59cbaffE561BC5A490BEeb37eC9Fb8c92b0",
+  "superAdmin": "0x72A8Ee8e113dC22D89531640be97Cd5246441b73",
+  "governanceAgent": "0x2A8Bc9eA2C3693146c2654cBD3E95767443B3264",
+  "complianceAgent": "0x4E73bf244AAb6C625A17264f712c926AD11a0408",
+  "lifecycleAgent": "0x0eC9489680A7522104762513cC669C9977DB8D04",
+  "transferManagerAgent": "0x0F9e55F93cec549d6cfe84352538A76065ceBd00",
+  "explorer": {
+    "identityRegistry": "https://sepolia.etherscan.io/address/0xDf47E753589f6f4337999DC72bF0530301AEDe5b",
+    "modularCompliance": "https://sepolia.etherscan.io/address/0xAd8C670c58a5e00baA3BCC5dd9C1eE607EBE53EB",
+    "token": "https://sepolia.etherscan.io/address/0xC85bB59cbaffE561BC5A490BEeb37eC9Fb8c92b0"
+  }
+}
