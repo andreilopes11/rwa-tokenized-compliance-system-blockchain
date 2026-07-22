@@ -92,7 +92,7 @@ Prefer copying from `deployments/11155111.backend.env` into the EB console (neve
 
 | Command | Network | Profile |
 |---------|---------|---------|
-| `npm run local:up` | Anvil `31337` | **trex** (same `DeployTREX.s.sol` as Sepolia — parity) |
+| `npm run local:up` | Anvil `11155111` | **trex** (same `DeployTREX.s.sol` as Sepolia — parity) |
 | `npm run deploy:sepolia` | Sepolia `11155111` | **trex** (production path) |
 | `npm run deploy:sepolia:legacy` | Sepolia | mvp (legacy `src/legacy/`, migration only) |
 
