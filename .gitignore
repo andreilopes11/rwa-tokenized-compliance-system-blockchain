@@ -20,3 +20,6 @@ states/
 .env.local
 .DS_Store
 .local/
+
+# Local Sepolia secrets (RPC + admin keys) — never commit
+config/sepolia.json

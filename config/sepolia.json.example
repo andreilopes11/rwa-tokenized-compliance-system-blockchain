@@ -1,0 +1,9 @@
+{
+  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+  "chainId": 11155111,
+  "privateKey": "0xYOUR_ADMIN_PRIVATE_KEY",
+  "governanceAgentPrivateKey": "0xOPTIONAL",
+  "complianceAgentPrivateKey": "0xOPTIONAL",
+  "lifecycleAgentPrivateKey": "0xOPTIONAL",
+  "transferManagerAgentPrivateKey": "0xOPTIONAL"
+}

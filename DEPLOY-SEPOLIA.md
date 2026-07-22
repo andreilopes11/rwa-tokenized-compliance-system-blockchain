@@ -96,6 +96,22 @@ Prefer copying from `deployments/11155111.backend.env` into the EB console (neve
 | `npm run deploy:sepolia` | Sepolia `11155111` | **trex** (production path) |
 | `npm run deploy:sepolia:legacy` | Sepolia | mvp (legacy `src/legacy/`, migration only) |
 
+### Local FE + BE against live Sepolia (recommended for speed)
+
+Use production Sepolia addresses/RPC without Anvil:
+
+1. Copy `config/sepolia.json.example` → `config/sepolia.json` (gitignored) and fill RPC + admin key  
+2. From workspace root:
+
+```powershell
+.\root\scripts\stack.ps1 sync --chain sepolia
+.\root\scripts\stack.ps1 up --chain sepolia --skip-deps
+.\root\scripts\smoke-sepolia-local.ps1
+```
+
+This writes `.local-runtime/stack.env` with `SPRING_PROFILES_ACTIVE=local,sepolia`,
+`BLOCKCHAIN_MODE=trex`, and IR/token/MC from [`config/sepolia-addresses.json`](config/sepolia-addresses.json).
+
 ## Security
 
 - Never commit funded private keys or Alchemy API keys
